@@ -1,0 +1,18 @@
+# Keeps a copy (fork) of Tally up to date with the original, once a day.
+# Does nothing in the original repo. In a fork: Actions tab → enable workflows once.
+name: Get Tally updates
+on:
+  schedule:
+    - cron: '23 1 * * *'   # daily, ~5:23am UAE time
+  workflow_dispatch: {}     # "Run workflow" button for an update right now
+permissions:
+  contents: write
+jobs:
+  sync:
+    if: github.repository != 'kyopo929/tally'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull in the latest version of Tally
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh api -X POST "repos/${{ github.repository }}/merge-upstream" -f branch=main
