@@ -174,7 +174,9 @@
   const open = () => S.tasks.filter(t => !t.done && !t.type && taskInScope(t));
   /* ---------- Public holidays: UAE, US, South Korea (auto-updated daily from /api/holidays, built-in fallback) ---------- */
   const HOL_KEY = 'tally.holidays.v2';
-  const HOL_COUNTRIES = { ae: 'UAE', us: 'US', kr: 'South Korea' };
+  // Which countries this copy offers (set per copy in api/_cfg.js / the HOLIDAYS setting in Vercel)
+  const HOL_ALL = { ae: 'UAE', us: 'US', kr: 'South Korea' }, HOL_PICK = (window.TALLY_CONFIG || {}).holidays;
+  const HOL_COUNTRIES = Object.fromEntries(Object.entries(HOL_ALL).filter(([c]) => !Array.isArray(HOL_PICK) || HOL_PICK.includes(c)));
   const HOL_SUFFIX = { ae: '', us: ' (US)', kr: ' (Korea)' };
   function nthWeekday(y, m, wd, n) { const d = new Date(y, m, 1); let c = 0; while (true) { if (d.getDay() === wd && ++c === n) return D.toISO(d); d.setDate(d.getDate() + 1); } }
   function lastWeekday(y, m, wd) { const d = new Date(y, m + 1, 0); while (d.getDay() !== wd) d.setDate(d.getDate() - 1); return D.toISO(d); }

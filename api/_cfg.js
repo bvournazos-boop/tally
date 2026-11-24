@@ -4,10 +4,18 @@
 const ORIGINAL_HOST = 'tally-ntqo.vercel.app';
 const ORIGINAL = { url: 'https://tvygsmhbrjsjgnnvdgns.supabase.co', key: 'sb_publishable_Ni3DpOM242PEEpRIa-Ss9w_tMCjInmR' };
 
+// Public-holiday countries a copy offers in Settings: HOLIDAYS="ae,us" (any of ae, us, kr). Default ae,us; the original also has kr.
+function holidaysFor(req) {
+  if (process.env.HOLIDAYS) return process.env.HOLIDAYS.split(',').map(x => x.trim().toLowerCase()).filter(Boolean);
+  return isOriginal(req) ? ['ae', 'us', 'kr'] : ['ae', 'us'];
+}
+function isOriginal(req) {
+  const host = String((req && req.headers && (req.headers['x-forwarded-host'] || req.headers.host)) || '').toLowerCase();
+  return host === ORIGINAL_HOST || process.env.VERCEL_PROJECT_PRODUCTION_URL === ORIGINAL_HOST;
+}
 function supabaseFor(req) {
   if (process.env.SUPABASE_URL && process.env.SUPABASE_PUBLISHABLE_KEY) return { url: process.env.SUPABASE_URL.replace(/\/+$/, ''), key: process.env.SUPABASE_PUBLISHABLE_KEY };
-  const host = String((req && req.headers && (req.headers['x-forwarded-host'] || req.headers.host)) || '').toLowerCase();
-  if (host === ORIGINAL_HOST || process.env.VERCEL_PROJECT_PRODUCTION_URL === ORIGINAL_HOST) return ORIGINAL;
+  if (isOriginal(req)) return ORIGINAL;
   return { url: '', key: '' };
 }
-module.exports = { supabaseFor };
+module.exports = { supabaseFor, holidaysFor };
