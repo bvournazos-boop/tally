@@ -3,6 +3,10 @@
     {
       "source": "/feed/:file",
       "destination": "/api/feed?t=:file"
+    },
+    {
+      "source": "/config.js",
+      "destination": "/api/config"
     }
   ],
   "crons": [

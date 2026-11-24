@@ -3,10 +3,11 @@
 const { buildIcs } = require('./_ics');
 
 // Public project settings (same as in the app). Access is limited by the secret token.
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://tvygsmhbrjsjgnnvdgns.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Ni3DpOM242PEEpRIa-Ss9w_tMCjInmR';
+const { supabaseFor } = require('./_cfg');
+let SUPABASE_URL = '', SUPABASE_KEY = ''; // set per request (see api/_cfg.js)
 
 module.exports = async function handler(req, res) {
+  ({ url: SUPABASE_URL, key: SUPABASE_KEY } = supabaseFor(req));
   const url = new URL(req.url, 'http://x');
   // Link forms: /feed/TOKEN.ics (everything), /feed/TOKEN-work.ics, /feed/TOKEN-personal.ics
   const [token, suffix] = (url.searchParams.get('t') || '').replace(/\.ics$/, '').split('-');

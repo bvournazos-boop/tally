@@ -5,8 +5,8 @@
 const webpush = require('web-push');
 const { dueNow } = require('./_reminders');
 
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://tvygsmhbrjsjgnnvdgns.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Ni3DpOM242PEEpRIa-Ss9w_tMCjInmR';
+const { supabaseFor } = require('./_cfg');
+let SUPABASE_URL = '', SUPABASE_KEY = ''; // set per request (see api/_cfg.js)
 const PUB = process.env.VAPID_PUBLIC_KEY || '';
 const PRIV = process.env.VAPID_PRIVATE_KEY || '';
 const SECRET = process.env.PUSH_SECRET || '';
@@ -30,6 +30,7 @@ function send(res, code, obj) {
 }
 
 module.exports = async function handler(req, res) {
+  ({ url: SUPABASE_URL, key: SUPABASE_KEY } = supabaseFor(req));
   if (req.method === 'GET') {
     res.setHeader('Cache-Control', 'public, max-age=300');
     return send(res, 200, { key: PUB || null });
@@ -40,7 +41,7 @@ module.exports = async function handler(req, res) {
   if (auth !== SECRET) return send(res, 401, { error: 'Not allowed' });
 
   try {
-    webpush.setVapidDetails(process.env.VAPID_SUBJECT || 'https://tally-ntqo.vercel.app', PUB, PRIV);
+    webpush.setVapidDetails(process.env.VAPID_SUBJECT || ('https://' + (req.headers['x-forwarded-host'] || req.headers.host || 'localhost')), PUB, PRIV);
     const work = await rpc('push_work', { p_secret: SECRET });
     const due = dueNow(work, Date.now());
     const sent = [], gone = new Set(), failed = [];

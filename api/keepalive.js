@@ -3,10 +3,11 @@
 // sync awake even when no device opens Tally (long vacations). It reads nothing private:
 // it asks the calendar-feed lookup for a token that doesn't exist.
 'use strict';
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://tvygsmhbrjsjgnnvdgns.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Ni3DpOM242PEEpRIa-Ss9w_tMCjInmR';
+const { supabaseFor } = require('./_cfg');
+let SUPABASE_URL = '', SUPABASE_KEY = ''; // set per request (see api/_cfg.js)
 
 module.exports = async function handler(req, res) {
+  ({ url: SUPABASE_URL, key: SUPABASE_KEY } = supabaseFor(req));
   try {
     // The calendar-feed lookup is open to the public key; an unknown token simply returns nothing
     const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/feed_items', { method: 'POST', headers: { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_token: 'keepalive-no-such-token' }) });

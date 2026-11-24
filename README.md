@@ -16,6 +16,9 @@ A personal to-do app to replace Microsoft To Do: lists in groups, quick add in p
 
 Live app: https://tally-ntqo.vercel.app (Vercel redeploys on every push to `main`).
 
+## Your own copy
+A copy needs its own Supabase project. In Vercel → Settings → Environment Variables, set `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` (Supabase → Project Settings → API Keys), then redeploy. Without them, sync stays off; a copy never uses the original project. Then follow the steps below with your own address in place of `tally-ntqo.vercel.app`.
+
 ## Sync setup (one time, in Supabase)
 1. SQL Editor → run `supabase/schema.sql`.
 2. Authentication → URL Configuration: Site URL `https://tally-ntqo.vercel.app`, add redirect URL `https://tally-ntqo.vercel.app/**`.

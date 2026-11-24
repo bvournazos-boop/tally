@@ -1024,13 +1024,7 @@ button.ol-dot.folded { background: var(--accent); opacity: 1; box-shadow: 0 0 0 
 <div class="sheet-bg" id="sheet" hidden></div>
 <div class="lightbox" id="lightbox" hidden></div>
 <input type="file" id="filePick" accept="image/*,application/pdf,.pdf" multiple hidden>
-<script>
-// Sync settings. The publishable key is meant to be public; access is protected by row-level security in Supabase.
-window.TALLY_CONFIG = {
-  supabaseUrl: 'https://tvygsmhbrjsjgnnvdgns.supabase.co',
-  supabaseKey: 'sb_publishable_Ni3DpOM242PEEpRIa-Ss9w_tMCjInmR'
-};
-</script>
+<script src="config.js"></script>
 <script src="vendor/supabase.js"></script>
 <script>
 /* Quick-add parser + date/recurrence helpers. Pure functions, no DOM. */
