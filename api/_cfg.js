@@ -13,8 +13,13 @@ function isOriginal(req) {
   const host = String((req && req.headers && (req.headers['x-forwarded-host'] || req.headers.host)) || '').toLowerCase();
   return host === ORIGINAL_HOST || process.env.VERCEL_PROJECT_PRODUCTION_URL === ORIGINAL_HOST;
 }
+// Accept the address however it was pasted ("…supabase.co/rest/v1/", spaces): keep just https://<project>.supabase.co
+function cleanUrl(u) {
+  u = String(u || '').trim();
+  try { return new URL(/^https?:\/\//i.test(u) ? u : 'https://' + u).origin; } catch (e) { return u.replace(/\/+$/, ''); }
+}
 function supabaseFor(req) {
-  if (process.env.SUPABASE_URL && process.env.SUPABASE_PUBLISHABLE_KEY) return { url: process.env.SUPABASE_URL.replace(/\/+$/, ''), key: process.env.SUPABASE_PUBLISHABLE_KEY };
+  if (process.env.SUPABASE_URL && process.env.SUPABASE_PUBLISHABLE_KEY) return { url: cleanUrl(process.env.SUPABASE_URL), key: process.env.SUPABASE_PUBLISHABLE_KEY.trim() };
   if (isOriginal(req)) return ORIGINAL;
   return { url: '', key: '' };
 }
