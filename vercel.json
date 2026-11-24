@@ -1,0 +1,14 @@
+{
+  "rewrites": [
+    {
+      "source": "/feed/:file",
+      "destination": "/api/feed?t=:file"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/keepalive",
+      "schedule": "17 4 * * *"
+    }
+  ]
+}

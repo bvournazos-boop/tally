@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<title>Tally</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2f7a50">
+<link rel="icon" href="icons/icon-192.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/*CSS*/
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" aria-label="Lists">
+    <div class="brand"><span class="brand-mark"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M26.4 13.2A11.4 11.4 0 1 1 20.3 6.4" fill="none" stroke="#13923f" stroke-width="2.4" stroke-linecap="round"/><path d="M8.6 14.6l5.2 5.4L27.4 3.6" fill="none" stroke="#13923f" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Tally</div>
+    <div id="sideBody" style="display:flex;flex-direction:column;flex:1;min-height:0"></div>
+  </aside>
+  <main class="main">
+    <header class="head">
+      <button type="button" class="menu-toggle iconbtn" id="menuToggle" aria-label="Show lists"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <h1 id="viewTitle">Calendar</h1><span class="sub" id="viewSub"></span><span class="view-actions" id="viewActions"></span>
+      <span class="spacer"></span>
+      <label class="search" for="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><input id="search" type="search" placeholder="Search" autocomplete="off" aria-label="Search tasks"><kbd>/</kbd></label>
+    </header>
+    <div class="qa-wrap">
+      <label class="qa" for="qa">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        <input id="qa" autocomplete="off" placeholder="Add a task, e.g. dentist fri 3pm" aria-label="Quick add task">
+        <button type="button" class="qamode" id="qaMode" aria-pressed="false" title="Add an event instead of a task">Event</button>
+        <kbd>Ctrl K</kbd>
+        <button type="button" class="help" id="helpBtn" title="Examples of what you can type (?)"><svg viewBox="0 0 24 24"><path d="M13 2.5L4.5 13.5H12l-1 8 8.5-11H12z"/></svg>Examples</button>
+      </label>
+      <div class="qa-preview" id="qaPreview" aria-live="polite"></div>
+    </div>
+    <div class="content" id="content"></div>
+  </main>
+  <aside class="detail" id="detail" hidden aria-label="Task details"></aside>
+  <div class="scrim" id="scrim" aria-hidden="true"></div>
+</div>
+<div class="menu" id="menu" hidden></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<div class="alarm" id="alarm" role="alert" hidden></div>
+<div class="multibar" id="multibar" role="toolbar" aria-label="Selected tasks" hidden></div>
+<div class="sheet-bg" id="sheet" hidden></div>
+<div class="lightbox" id="lightbox" hidden></div>
+<input type="file" id="filePick" accept="image/*,application/pdf,.pdf" multiple hidden>
+<script>
+// Sync settings. The publishable key is meant to be public; access is protected by row-level security in Supabase.
+window.TALLY_CONFIG = {
+  supabaseUrl: 'https://tvygsmhbrjsjgnnvdgns.supabase.co',
+  supabaseKey: 'sb_publishable_Ni3DpOM242PEEpRIa-Ss9w_tMCjInmR'
+};
+</script>
+<script src="vendor/supabase.js"></script>
+<script>
+/*PARSER*/
+</script>
+<script>
+/*APP*/
+</script>
+<script>
+// Installable app: register the offline worker when served from a real site
+try { if ('serviceWorker' in navigator && location.protocol === 'https:' && !/claude|claudeusercontent/.test(location.hostname)) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
+</script>
+</body>
+</html>

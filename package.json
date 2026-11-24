@@ -1,0 +1,8 @@
+{
+  "name": "tally",
+  "private": true,
+  "description": "Tally. The app is static (index.html); this file only lists what the server functions in api/ need.",
+  "dependencies": {
+    "web-push": "^3.6.7"
+  }
+}

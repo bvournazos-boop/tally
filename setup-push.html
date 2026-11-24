@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Set up reminders when Tally is closed</title>
+<link rel="icon" href="icons/icon-192.png?v=2">
+<style>
+  :root { --ink: #18202c; --muted: #5d6676; --line: #dfe3ea; --accent: #13923f; --soft: #e8f4ec; --bg: #f4f6f4; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 "Segoe UI", system-ui, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 28px 18px 60px; }
+  h1 { font-size: 24px; margin: 0 0 6px; }
+  h2 { font-size: 17px; margin: 28px 0 8px; display: flex; gap: 10px; align-items: center; }
+  h2 .n { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-size: 14px; flex: none; }
+  p, li { color: var(--muted); }
+  b, strong { color: var(--ink); }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; margin: 10px 0; }
+  .row label { grid-column: 1 / -1; font-weight: 600; font-size: 13px; color: var(--ink); }
+  .row input { width: 100%; font: 13px ui-monospace, Consolas, monospace; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fafbfa; min-width: 0; }
+  button { font: inherit; font-weight: 600; border: 0; border-radius: 8px; padding: 9px 14px; background: var(--accent); color: #fff; cursor: pointer; }
+  button.ghost { background: var(--soft); color: var(--accent); }
+  textarea { width: 100%; height: 220px; font: 12px ui-monospace, Consolas, monospace; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: #fafbfa; resize: vertical; }
+  ol { padding-left: 22px; } li { margin: 4px 0; }
+  .warn { background: #fff6e0; border: 1px solid #f1d58f; border-radius: 10px; padding: 10px 12px; color: #6b4e00; }
+  .ok { color: var(--accent); font-weight: 600; }
+  code { font: 13px ui-monospace, Consolas, monospace; background: #eef1ee; padding: 1px 5px; border-radius: 4px; color: var(--ink); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Set up reminders when Tally is closed</h1>
+  <p>This page made three secret values just now, inside your browser. Nothing on this page is sent anywhere. Do the three steps below in order, then close this page. <strong>Keep this tab open until you finish</strong>: if you reload it, it makes new values and you'd start over.</p>
+  <p class="warn">Treat these like passwords. Paste them only into Vercel and Supabase as shown, nowhere else (not in a chat or email).</p>
+
+  <h2><span class="n">1</span>Put three values into Vercel</h2>
+  <div class="card">
+    <ol>
+      <li>Open <b>vercel.com</b> → your <b>tally</b> project → <b>Settings</b> (top) → <b>Environment Variables</b> (left).</li>
+      <li>For each row below: click <b>Copy</b> next to the name and paste it in <b>Key</b>, then click <b>Copy</b> next to the value and paste it in <b>Value</b>. Leave <b>All Environments</b> selected and click <b>Save</b>.</li>
+    </ol>
+    <div id="vals"><p>Making keys…</p></div>
+    <p>When all three are saved, go to <b>Deployments</b> (top), click the <b>⋯</b> on the newest one → <b>Redeploy</b> → <b>Redeploy</b>. (Vercel only reads new values on a fresh deploy.)</p>
+  </div>
+
+  <h2><span class="n">2</span>Run one block in Supabase</h2>
+  <div class="card">
+    <ol>
+      <li>Open <b>supabase.com</b> → your project → <b>SQL Editor</b> (left) → <b>+ New query</b>.</li>
+      <li>Click <b>Copy</b> below, paste into the editor, and click <b>Run</b>. You should see <b>Success</b>.</li>
+    </ol>
+    <textarea id="sql" readonly>Loading…</textarea>
+    <p><button type="button" id="copySql">Copy</button> <span id="sqlMsg"></span></p>
+    <p>This creates the tables, stores the timer's secret, and tells Supabase to check for due reminders every minute.</p>
+    <p>If it says <code>extension "pg_cron" is not available</code> or similar: in Supabase go to <b>Integrations</b> (left) → <b>Cron</b> → <b>Enable</b>, and <b>Integrations</b> → <b>pg_net</b> (or Database → Extensions → <b>pg_net</b>) → <b>Enable</b>. Then click <b>Run</b> again.</p>
+  </div>
+
+  <h2><span class="n">3</span>Turn it on in Tally</h2>
+  <div class="card">
+    <p>Close Tally completely and open it again (on each computer and phone). If notifications are already allowed and sync is on, there's nothing else to click. To check: <b>Settings</b> → the notifications line should say <b>“on, even when Tally is closed”</b>.</p>
+    <p><button type="button" class="ghost" id="check">Check the sender is ready</button> <span id="checkMsg"></span></p>
+  </div>
+</main>
+<script>
+(async () => {
+  const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const fromB64u = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - s.length % 4) % 4)), c => c.charCodeAt(0));
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const copy = (text, btn) => navigator.clipboard.writeText(text).then(() => { const o = btn.textContent; btn.textContent = 'Copied'; setTimeout(() => btn.textContent = o, 1400); }, () => alert('Couldn’t copy. Select the text and press Ctrl+C.'));
+
+  // A key pair for signing pushes (P-256), made here with the browser's own crypto
+  const kp = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+  const jwk = await crypto.subtle.exportKey('jwk', kp.privateKey);
+  const pub = await crypto.subtle.exportKey('raw', kp.publicKey); // 65 bytes, starts with 0x04
+  const VAPID_PUBLIC_KEY = b64u(pub), VAPID_PRIVATE_KEY = jwk.d;
+  if (fromB64u(VAPID_PUBLIC_KEY).length !== 65 || fromB64u(VAPID_PRIVATE_KEY).length !== 32) { document.getElementById('vals').innerHTML = '<p class="warn">Something went wrong making the keys. Reload the page.</p>'; return; }
+  const abc = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const PUSH_SECRET = Array.from(crypto.getRandomValues(new Uint8Array(48)), x => abc[x % 62]).join('');
+
+  const rows = [['VAPID_PUBLIC_KEY', VAPID_PUBLIC_KEY], ['VAPID_PRIVATE_KEY', VAPID_PRIVATE_KEY], ['PUSH_SECRET', PUSH_SECRET]];
+  document.getElementById('vals').innerHTML = rows.map(([k, v], i) =>
+    '<div class="row"><label>' + (i + 1) + '. ' + k + '</label><input readonly value="' + esc(k) + '"><button type="button" class="ghost" data-c="' + esc(k) + '">Copy name</button>' +
+    '<input readonly value="' + esc(v) + '"><button type="button" data-c="' + esc(v) + '">Copy value</button></div>').join('');
+  document.querySelectorAll('[data-c]').forEach(b => b.onclick = () => copy(b.dataset.c, b));
+
+  const site = location.origin;
+  let base = '';
+  try { const r = await fetch('supabase/push.sql', { cache: 'no-store' }); if (!r.ok) throw 0; base = await r.text(); } catch (e) { document.getElementById('sql').value = 'Couldn’t load supabase/push.sql. Reload the page.'; return; }
+  const tail = `
+
+-- ---- Your secret and the every-minute timer ----
+create extension if not exists pg_cron with schema pg_catalog;
+create extension if not exists pg_net with schema extensions;
+
+insert into public.push_config (id, secret) values (1, '${PUSH_SECRET}')
+on conflict (id) do update set secret = excluded.secret;
+
+select cron.unschedule(jobid) from cron.job where jobname = 'tally-push';
+select cron.schedule('tally-push', '* * * * *', $job$
+  select net.http_post(
+    url := '${site}/api/push',
+    headers := jsonb_build_object('Content-Type', 'application/json', 'Authorization', 'Bearer ' || (select secret from public.push_config where id = 1)),
+    body := '{}'::jsonb,
+    timeout_milliseconds := 20000
+  );
+$job$);
+`;
+  document.getElementById('sql').value = base + tail;
+  document.getElementById('copySql').onclick = e => copy(document.getElementById('sql').value, e.target);
+
+  document.getElementById('check').onclick = async () => {
+    const m = document.getElementById('checkMsg'); m.textContent = 'Checking…';
+    try {
+      const r = await fetch('/api/push?key=1', { cache: 'no-store' }); const j = await r.json();
+      if (!j.key) m.innerHTML = 'Not yet: Vercel doesn’t have the keys. Check step 1, including <b>Redeploy</b>.';
+      else if (j.key !== VAPID_PUBLIC_KEY) m.innerHTML = 'Vercel has keys from an earlier visit to this page. Either paste this page’s three values again (and redeploy), or ignore this if you set it up before and it works.';
+      else m.innerHTML = '<span class="ok">Vercel is ready.</span> If step 2 said Success, you’re done.';
+    } catch (e) { m.textContent = 'Couldn’t reach the sender. Is the deploy finished?'; }
+  };
+})();
+</script>
+</body>
+</html>
